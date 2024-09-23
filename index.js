@@ -12,34 +12,42 @@ require("dotenv").config();
 
 const key = process.env.WEATHER_API_KEY;
 
-app.post("/", function(req, res){
-    console.log("form send data", req.body.cityname);
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${req.body.cityname}&appid=${key}`, {
-        method: "GET"
-    }).then(res => res.json()).then(data => {
-        let desc = data.weather[0].description;
-        let city = data.name;
-        let temp = Math.round(parseFloat(data.main.temp)-273.15)
-        res.render("index", {
-            description: desc,
-            city,
-            temp
-        });
-    })
-});
+const getWeatherData = (url) => {
+    return new Promise((resolve, reject) => {
+        fetch(url, {
+            method: "GET"
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data, url);
+            let desc = data.weather[0].description;
+            let city = data.name;
+            let temp = Math.round(parseFloat(data.main.temp)-273.15)
 
-app.get("/", function(req, res){
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=Tartu&appid=${key}`, {
-        method: "GET"
-    }).then(res => res.json()).then(data => {
-        let desc = data.weather[0].description;
-        let city = data.name;
-        let temp = Math.round(parseFloat(data.main.temp)-273.15)
-        res.render("index", {
-            description: desc,
-            city,
-            temp
-        });
+            let result = {
+                description: desc,
+                city,
+                temp
+            }
+
+            resolve(result)
+        })
+        .catch(error => {
+            reject(error)
+        })
+    })
+}
+
+app.all("/", function(req, res){
+    let city;
+    if(req.method == "GET") {
+        city = "Tartu";
+    } else {
+        city = req.body.cityname;
+    }
+    url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`
+    getWeatherData(url).then(data => {
+        res.render('index', data);
     })
 });
 
