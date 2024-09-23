@@ -27,7 +27,8 @@ const getWeatherData = (url) => {
             let result = {
                 description: desc,
                 city,
-                temp
+                temp,
+                error:null
             }
 
             resolve(result)
@@ -48,6 +49,8 @@ app.all("/", function(req, res){
     url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`
     getWeatherData(url).then(data => {
         res.render('index', data);
+    }).catch(err => {
+        res.render('index', {error: "Problem with getting data, try again"})
     })
 });
 
