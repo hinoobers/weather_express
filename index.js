@@ -4,9 +4,23 @@ const app = express();
 const path = require("path");
 app.set("view engine", 'ejs');
 app.set("views", path.join(__dirname, 'views'));
+require("dotenv").config();
+
+const key = process.env.WEATHER_API_KEY;
 
 app.get("/", function(req, res){
-    res.render("index");
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=Tartu&appid=${key}`, {
+        method: "GET"
+    }).then(res => res.json()).then(data => {
+        let desc = data.weather[0].description;
+        let city = data.name;
+        let temp = Math.round(parseFloat(data.main.temp)-273.15)
+        res.render("index", {
+            description: desc,
+            city,
+            temp
+        });
+    })
 });
 
 app.listen(3000, () => {
