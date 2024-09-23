@@ -44,6 +44,11 @@ app.all("/", function(req, res){
     if(req.method == "GET") {
         city = "Tartu";
     } else {
+        if(!req.body.cityname) {
+            return res.render("index", {
+                error: "You need to enter correct city's name!"
+            })
+        }
         city = req.body.cityname;
     }
     url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`
